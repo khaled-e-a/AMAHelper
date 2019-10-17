@@ -1,0 +1,7 @@
+android/support/
+com/google/
+javax/mail/
+javax/activation/
+com/sun/mail/
+com/bumptech/glide/
+butterknife/
