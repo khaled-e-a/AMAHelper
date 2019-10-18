@@ -1,4 +1,4 @@
-### AMAHelper (Android Malware Analysis Helper)
+# AMAHelper (Android Malware Analysis Helper)
 
 Android Malware analysis helper contains convenience scripts for Android malware analysis.
 
@@ -7,14 +7,12 @@ This helps to narrow down the starting point for reverse engineering.
 
 ## Usage
 
-`look-for-sensitive-apis.py sensitive-api-list.txt whitelist.txt matches.txt /path/to/java/directory/` 
+`look-for-sensitive-apis.py sensitive-api-list.txt whitelist.txt matches.txt /path/to/java/directory/`
 
 `sensitive-api-list.py`: list of APIs that you want to start your analysis from.
 
 `whitelist.txt`: whitelisted packages.
 
-`matches.txt`: the script will create this file and write the search results to it. 
+`matches.txt`: the script will create this file and write the search results to it.
 
-`/path/to/java/directory/`: directory of the decompiled apk (in java) 
-
-
+`/path/to/java/directory/`: directory of the decompiled apk (in java)

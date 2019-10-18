@@ -1,13 +1,8 @@
 import os
 import sys
 import re
-
-
-def append_to_file(file_name: str, line: str) -> None:
-    with open(file_name, "a+") as f:
-        f.write(line)
-        f.write("\n")
-
+import util
+import collections
 
 if __name__ == "__main__":
     # file containing sensitive APIs (sensitive-api-list.txt)
@@ -33,13 +28,10 @@ if __name__ == "__main__":
             whitelist_libraries.add(l.strip())
 
     # Get method names only
-    sensitive_apis_methods = dict()
+    sensitive_apis_methods = collections.defaultdict(list)
     for s in sensitive_apis_set:
         method = s.split(" ", 2)[2].split("(")[0]
-        if method not in sensitive_apis_methods:
-            sensitive_apis_methods[method] = [s]
-        else:
-            sensitive_apis_methods[method].append(s)
+        sensitive_apis_methods[method].append(s)
 
     # Get all files in the given directory
     # https://thispointer.com/python-how-to-get-list-of-files-in-directory-and-sub-directories/
@@ -56,7 +48,7 @@ if __name__ == "__main__":
 
     # Scan the java for usages of these sensitive methods
     malicious_files = set()
-    append_to_file(log_file, "Sensitive api search results")
+    util.append_to_file(log_file, "Sensitive api search results")
     for method in sensitive_apis_methods:
         wrote_sensitive_api = False
         for f in files:
@@ -68,18 +60,20 @@ if __name__ == "__main__":
                         lines_to_write.append(str(line_num) + ":" + line)
                 if lines_to_write:
                     if not wrote_sensitive_api:
-                        append_to_file(log_file, "Looking for method: "+method)
-                        append_to_file(log_file, "This method is possibly a "
-                                       + "sensitive API from this list: "
-                                       + str(sensitive_apis_methods[method]))
+                        message = "Looking for method: " + method
+                        util.append_to_file(log_file, message)
+                        message = "This method is possibly a sensitive API" + \
+                                  "from this list: " + \
+                                  str(sensitive_apis_methods[method])
+                        util.append_to_file(log_file, message)
                         wrote_sensitive_api = True
                     malicious_files.add(f)
-                    append_to_file(log_file, "File: " + f)
+                    util.append_to_file(log_file, "File: " + f)
                     for l in lines_to_write:
-                        append_to_file(log_file, l)
+                        util.append_to_file(log_file, l)
 
     # Summarize possibly malicious files
     if malicious_files:
-        append_to_file(log_file, "Summary of possible malicious files:")
+        util.append_to_file(log_file, "Summary of possible malicious files:")
         for f in malicious_files:
-            append_to_file(log_file, f)
+            util.append_to_file(log_file, f)
