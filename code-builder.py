@@ -2,8 +2,6 @@ import os
 import sys
 import logging
 import collections
-from functools import reduce
-import re
 import util
 
 logger = logging.getLogger(__name__)
