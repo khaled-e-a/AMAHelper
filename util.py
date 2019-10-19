@@ -5,6 +5,8 @@ import subprocess
 def get_all_files(directory: str) -> list:
     # Get all files in the given directory
     # https://thispointer.com/python-how-to-get-list-of-files-in-directory-and-sub-directories/
+    if not os.path.isdir(directory):
+        raise ValueError(directory+" is not a directory")
     files = list()
     for (dirpath, dirnames, filenames) in os.walk(directory):
         files += [os.path.join(dirpath, file) for file in filenames]
