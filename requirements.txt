@@ -66,7 +66,7 @@ pycrypto==2.6.1
 pydot==1.4.1
 Pygments==2.3.1
 pylint==1.9.3
-pyOpenSSL==16.2.0
+pyOpenSSL==17.5.0
 pyparsing==2.1.10
 pyperclip==1.5.32
 python-dateutil==2.7.5
