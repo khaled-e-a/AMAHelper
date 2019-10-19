@@ -23,7 +23,7 @@ cycler==0.10.0
 decorator==4.3.0
 EditorConfig==0.12.2
 enum34==1.1.6
-Flask==0.11.1
+Flask==1.0
 future==0.17.1
 futures==3.2.0
 h2==2.4.4
