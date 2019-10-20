@@ -20,6 +20,7 @@ def build_graph(file):
     yield cb
     os.remove("report/report.html")
     os.remove("report/graph.png")
+    os.remove("report/graph")
     os.rmdir("report/")
 
 
