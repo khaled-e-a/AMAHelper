@@ -16,7 +16,12 @@ class CodeBuilder:
     dot_graph = ""
     report_directory = "report/"
 
-    def __init__(self, directory: str):
+    def __init__(self, directory: str) -> None:
+        """
+        Generate a report with a graph from AMAHelper annotated java files
+        :param str directory: directory that contains java files, or a java file
+        :raises ValueError: the input is not a directory of a java file
+        """
         try:
             try:
                 files = Util.get_all_files(directory)
@@ -42,7 +47,12 @@ class CodeBuilder:
         with open(self.report_directory + "report.html", "w")as f:
             f.write(html_string)
 
-    def create_page(self, marked_code: List[tuple]):
+    def create_page(self, marked_code: List[tuple]) -> str:
+        """
+        Create an html report page with a graph of dependencies between code blocks
+        :param marked_code:
+        :return: html page as a string
+        """
         modified_method = dict()
         for num, file_name, code in marked_code:
             method_body = self.modify_method_annotations(code, num)
@@ -68,6 +78,10 @@ class CodeBuilder:
         return html_str
 
     def create_dot_graph(self) -> None:
+        """
+        Generate a dot graph :attr: `dot_graph`
+        :return:
+        """
         dot = Digraph(comment='AMAHelperGraph')
         for node, edges in self.control_graph.items():
             [dot.edge(str(node), str(e)) for e in edges]
@@ -77,7 +91,12 @@ class CodeBuilder:
         self.dot_graph = dot.source
 
     def modify_method_annotations(self, code: list, num: int) -> str:
-
+        """
+        Modifies AMAHelper annotations to html reference
+        :param code: list of lines code block representing a code block with annotations
+        :param num: the number of the block
+        :return: returns the modified block
+        """
         method_body = ""
         for line_number, line in enumerate(code):
             line = line.rstrip()
@@ -101,6 +120,11 @@ class CodeBuilder:
 
     @staticmethod
     def extract_marked_code(file: str) -> Dict[int, List[str]]:
+        """
+
+        :param file: java file to extract code blocks from
+        :return: a dictionary of blocks indexed by the block number
+        """
         marked_code = collections.defaultdict(list)
         with open(file, "r") as f:
             in_marked_code = False
