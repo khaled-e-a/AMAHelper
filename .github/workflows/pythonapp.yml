@@ -27,4 +27,4 @@ jobs:
     - name: Test with pytest
       run: |
         pip3 install pytest
-        pyton3.7 -m pytest
+        python3.7 -m pytest
