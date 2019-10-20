@@ -1,8 +1,10 @@
 import pytest
 import os
-from amahelper.code_builder import code_builder
+from amahelper.code_builder import CodeBuilder
 
 data_files = dict()
+expected_control_graph = {'TestA.java': {1: [2, 3]}}
+expected_data_graph = {'TestA.java': {2: [3]}}
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -12,6 +14,18 @@ def load_test_data():
         data_files[data_file] = os.path.join(test_data_path, data_file)
 
 
-def test_graph_builder_TestA():
-    cb = code_builder(data_files["TestA.java"])
-    assert cb.graph == {1: [2, 3]}, "graph is not correct"
+@pytest.fixture
+def build_graph(file):
+    cb = CodeBuilder(data_files[file])
+    yield cb
+    os.remove("report/report.html")
+    os.remove("report/graph.png")
+    os.rmdir("report/")
+
+
+@pytest.mark.parametrize('file', ['TestA.java'])
+def test_graph_builder_test_graph(file, build_graph):
+    graph = build_graph
+    assert graph.control_graph == expected_control_graph[file], "control graph is not correct"
+    assert graph.data_graph == expected_data_graph[file], "data graph is not correct"
+

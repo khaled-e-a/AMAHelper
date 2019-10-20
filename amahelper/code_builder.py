@@ -2,14 +2,19 @@ import os
 import sys
 import logging
 import collections
-from .util import Util
+from typing import List, Dict
+from graphviz import Digraph
+from util import Util, CodeExtractionError, CodeGraphConstructionError
 
 logger = logging.getLogger(__name__)
 
 
-class code_builder():
+class CodeBuilder:
 
-    graph = collections.defaultdict(list)
+    control_graph = collections.defaultdict(list)
+    data_graph = collections.defaultdict(list)
+    dot_graph = ""
+    report_directory = "report/"
 
     def __init__(self, directory: str):
         try:
@@ -31,49 +36,71 @@ class code_builder():
 
         html_string = self.create_page(sorted(all_marked_code, key=lambda x: x[0]))
         try:
-            os.mkdir("report")
+            os.mkdir(self.report_directory)
         except FileExistsError:
             pass
-        with open("report/report.html", "w")as f:
+        with open(self.report_directory + "report.html", "w")as f:
             f.write(html_string)
 
-    def create_page(self: object, marked_code: list):
+    def create_page(self, marked_code: List[tuple]):
+        modified_method = dict()
+        for num, file_name, code in marked_code:
+            method_body = self.modify_method_annotations(code, num)
+            if num in modified_method:
+                raise CodeGraphConstructionError("Multiple code blocks with the same number annotation: " + str(num))
+            modified_method[num] = method_body
+        self.create_dot_graph()
         html_str = ''' <html><head>
             <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
             <style>body{ margin:0 100; background:whitesmoke; }</style>
             </head><body>
             <script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
-            <h1>AMAHelper graph</h1> '''
+            <h1>AMAHelper graph</h1>
+            <img src="graph.png" alt="Block graph align="middle""> 
+            '''
         for num, file_name, code in marked_code:
             html_str += "<!-- *** method *** --->"
-            html_str += "<h2 id=\""+str(num)+"\"> Block " + str(num) + " " +\
-                        "method_name " +\
-                        " :</h2>"
+            html_str += "<h2 id=\""+str(num)+"\"> Block " + str(num) + " " + " :</h2>"
             file_name = os.path.abspath(file_name)
             html_str += "<p>" + "file: <a href=" + file_name + ">"+file_name+"</a></p>"
-            method_body = ""
-            annotation = "// AMAHelper: control "
-            for line_number, line in enumerate(code):
-                line = line.rstrip()
-                # Add control flow links:
+            html_str += "<pre class=\"prettyprint\"><p>" + modified_method[num] + "</p></pre>"
+        html_str += "</body></html>"
+        return html_str
+
+    def create_dot_graph(self) -> None:
+        dot = Digraph(comment='AMAHelperGraph')
+        for node, edges in self.control_graph.items():
+            [dot.edge(str(node), str(e)) for e in edges]
+        for node, edges in self.data_graph.items():
+            [dot.edge(str(node), str(e), style="dashed") for e in edges]
+        dot.render(self.report_directory+"graph", format='png')
+        self.dot_graph = dot.source
+
+    def modify_method_annotations(self, code: list, num: int) -> str:
+
+        method_body = ""
+        for line_number, line in enumerate(code):
+            line = line.rstrip()
+            # Add control or data flow links:
+            for annotation in ["// AMAHelper: control ", "// AMAHelper: data "]:
                 if annotation in line:
                     try:
                         target_method = int(line.split(annotation)[1])
                     except (ValueError, IndexError):
                         logger.error("Malformed AMAHelper annotation at line "
                                      + str(line_number+1), exc_info=True)
-                        raise Util.CodeGraphConstructionError
+                        raise CodeGraphConstructionError
                     line = line.replace(annotation, "// Jump to <a style=\"color: #999999\" href=#" +
                                         str(target_method) + ">block </a>")
-                    self.graph[num].append(target_method)
-                method_body += line + "\n"
-            html_str += "<pre class=\"prettyprint\"><p>" + method_body + "</p></pre>"
-            # html_str += "<p id=\""+str(num)+"\">" + method_body + "</p>"
-        html_str += "</body></html>"
-        # html_str += <a href=\"method1.html\">my link</a>
-        return html_str
+                    if "control" in annotation:
+                        self.control_graph[num].append(target_method)
+                    else:
+                        self.data_graph[num].append(target_method)
+            method_body += line + "\n"
+        return method_body
 
-    def extract_marked_code(self: object, file: str) -> dict:
+    @staticmethod
+    def extract_marked_code(file: str) -> Dict[int, List[str]]:
         marked_code = collections.defaultdict(list)
         with open(file, "r") as f:
             in_marked_code = False
@@ -87,7 +114,7 @@ class code_builder():
                         logger.error("Malformed AMAHelper annotation at line "
                                      + str(line_number+1)
                                      + " in file " + file, exc_info=True)
-                        raise Util.CodeExtractionError
+                        raise CodeExtractionError
                 if in_marked_code:
                     marked_code[method_number].append(orig_line)
         return marked_code
@@ -95,4 +122,5 @@ class code_builder():
 
 if __name__ == "__main__":
     java_directory = sys.argv[1]
-    code_builder(java_directory)
+    CodeBuilder(java_directory)
+

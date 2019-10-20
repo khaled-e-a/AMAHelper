@@ -1,6 +1,6 @@
 import os
 import sys
-import util
+from .util import Util
 import collections
 
 if __name__ == "__main__":
@@ -26,14 +26,14 @@ if __name__ == "__main__":
     # summarize the malware assets types
     asset_types = collections.defaultdict(list)
     assets_directory = os.path.join(unzip_directory, "assets")
-    for file in util.get_all_files(assets_directory):
-        t = util.shell_command(["file", file]) \
+    for file in Util.get_all_files(assets_directory):
+        t = Util.shell_command(["file", file]) \
                                .split(": ")[1].split(",")[0]
         asset_types[t].append(file)
 
-    util.append_to_file(report_file, "File types in assets:")
+    Util.append_to_file(report_file, "File types in assets:")
     for t in asset_types:
-        util.append_to_file(report_file, "|   Type: " + t)
-        util.append_to_file(report_file, "|   |   File list: ")
+        Util.append_to_file(report_file, "|   Type: " + t)
+        Util.append_to_file(report_file, "|   |   File list: ")
         for f in asset_types[t]:
-            util.append_to_file(report_file, "|   |   |   " + f)
+            Util.append_to_file(report_file, "|   |   |   " + f)

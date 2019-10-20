@@ -1,7 +1,7 @@
 import os
 import sys
 import re
-import util
+from .util import Util
 import collections
 
 if __name__ == "__main__":
@@ -48,7 +48,7 @@ if __name__ == "__main__":
 
     # Scan the java for usages of these sensitive methods
     malicious_files = set()
-    util.append_to_file(log_file, "Sensitive api search results")
+    Util.append_to_file(log_file, "Sensitive api search results")
     for method in sensitive_apis_methods:
         wrote_sensitive_api = False
         for f in files:
@@ -61,19 +61,19 @@ if __name__ == "__main__":
                 if lines_to_write:
                     if not wrote_sensitive_api:
                         message = "Looking for method: " + method
-                        util.append_to_file(log_file, message)
+                        Util.append_to_file(log_file, message)
                         message = "This method is possibly a sensitive API" + \
                                   "from this list: " + \
                                   str(sensitive_apis_methods[method])
-                        util.append_to_file(log_file, message)
+                        Util.append_to_file(log_file, message)
                         wrote_sensitive_api = True
                     malicious_files.add(f)
-                    util.append_to_file(log_file, "File: " + f)
+                    Util.append_to_file(log_file, "File: " + f)
                     for l in lines_to_write:
-                        util.append_to_file(log_file, l)
+                        Util.append_to_file(log_file, l)
 
     # Summarize possibly malicious files
     if malicious_files:
-        util.append_to_file(log_file, "Summary of possible malicious files:")
+        Util.append_to_file(log_file, "Summary of possible malicious files:")
         for f in malicious_files:
-            util.append_to_file(log_file, f)
+            Util.append_to_file(log_file, f)
